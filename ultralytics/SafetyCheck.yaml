@@ -1,0 +1,7 @@
+train: /home/haoyu/work/code/YOLO/dataset/Construction_Site_Safety_Image_Dataset_Roboflow/css-data/train/images/
+val: /home/haoyu/work/code/YOLO/dataset/Construction_Site_Safety_Image_Dataset_Roboflow/css-data/valid/images
+test: /home/haoyu/work/code/YOLO/dataset/Construction_Site_Safety_Image_Dataset_Roboflow/css-data/test/images
+
+nc: 10
+
+names: [Hardhat, Mask, NO-Hardhat, NO-Mask, NO-Safety Vest, Person, Safety Cone, Safety Vest, machinery, vehicle]
