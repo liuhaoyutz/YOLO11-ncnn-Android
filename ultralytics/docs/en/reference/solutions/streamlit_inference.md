@@ -11,6 +11,6 @@ keywords: Ultralytics, YOLOv8, live inference, real-time object detection, Strea
 
 <br>
 
-## ::: ultralytics.solutions.streamlit_inference.Inference
+## ::: ultralytics.solutions.streamlit_inference.inference
 
 <br><br>

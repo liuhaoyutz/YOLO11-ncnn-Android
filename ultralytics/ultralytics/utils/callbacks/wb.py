@@ -1,4 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 
 from ultralytics.utils import SETTINGS, TESTS_RUNNING
 from ultralytics.utils.torch_utils import model_info_for_loggers
@@ -109,12 +109,7 @@ def _log_plots(plots, step):
 
 def on_pretrain_routine_start(trainer):
     """Initiate and start project if module is present."""
-    if not wb.run:
-        wb.init(
-            project=str(trainer.args.project).replace("/", "-") if trainer.args.project else "Ultralytics",
-            name=str(trainer.args.name).replace("/", "-"),
-            config=vars(trainer.args),
-        )
+    wb.run or wb.init(project=trainer.args.project or "YOLOv8", name=trainer.args.name, config=vars(trainer.args))
 
 
 def on_fit_epoch_end(trainer):
@@ -142,19 +137,17 @@ def on_train_end(trainer):
     if trainer.best.exists():
         art.add_file(trainer.best)
         wb.run.log_artifact(art, aliases=["best"])
-    # Check if we actually have plots to save
-    if trainer.args.plots and hasattr(trainer.validator.metrics, "curves_results"):
-        for curve_name, curve_values in zip(trainer.validator.metrics.curves, trainer.validator.metrics.curves_results):
-            x, y, x_title, y_title = curve_values
-            _plot_curve(
-                x,
-                y,
-                names=list(trainer.validator.metrics.names.values()),
-                id=f"curves/{curve_name}",
-                title=curve_name,
-                x_title=x_title,
-                y_title=y_title,
-            )
+    for curve_name, curve_values in zip(trainer.validator.metrics.curves, trainer.validator.metrics.curves_results):
+        x, y, x_title, y_title = curve_values
+        _plot_curve(
+            x,
+            y,
+            names=list(trainer.validator.metrics.names.values()),
+            id=f"curves/{curve_name}",
+            title=curve_name,
+            x_title=x_title,
+            y_title=y_title,
+        )
     wb.run.finish()  # required or run continues on dashboard
 
 

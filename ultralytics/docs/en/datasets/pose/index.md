@@ -42,7 +42,7 @@ The Ultralytics framework uses a YAML file format to define the dataset and mode
 
 ```yaml
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
-path: ../datasets/coco8-pose # dataset root dir (absolute or relative; if relative, it's relative to default datasets_dir)
+path: ../datasets/coco8-pose # dataset root dir
 train: images/train # train images (relative to 'path') 4 images
 val: images/val # val images (relative to 'path') 4 images
 test: # test images (optional)
@@ -126,15 +126,6 @@ This section outlines the datasets that are compatible with Ultralytics YOLO for
 - **Keypoints**: 21 keypoints.
 - **Usage**: Great for human hand pose estimation.
 - [Read more about Hand Keypoints](hand-keypoints.md)
-
-### Dog-Pose
-
-- **Description**: The Dog Pose dataset contains approximately 6,000 images, providing a diverse and extensive resource for training and validation of dog pose estimation models.
-- **Label Format**: Follows the Ultralytics YOLO format, with annotations for multiple keypoints specific to dog anatomy.
-- **Number of Classes**: 1 (Dog).
-- **Keypoints**: Includes 24 keypoints tailored to dog poses, such as limbs, joints, and head positions.
-- **Usage**: Ideal for training models to estimate dog poses in various scenarios, from research to real-world applications.
-- [Read more about Dog-Pose](dog-pose.md)
 
 ### Adding your own dataset
 

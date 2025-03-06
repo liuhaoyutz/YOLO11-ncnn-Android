@@ -71,7 +71,7 @@ keywords: Ultralytics, metrics, model validation, performance analysis, IoU, con
 
 <br><br><hr><br>
 
-## ::: ultralytics.utils.metrics.smooth_bce
+## ::: ultralytics.utils.metrics.smooth_BCE
 
 <br><br><hr><br>
 

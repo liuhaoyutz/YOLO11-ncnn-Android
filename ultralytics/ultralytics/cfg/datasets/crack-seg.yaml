@@ -1,5 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
-
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 # Crack-seg dataset by Ultralytics
 # Documentation: https://docs.ultralytics.com/datasets/segment/crack-seg/
 # Example usage: yolo train data=crack-seg.yaml

@@ -1,6 +1,6 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 
 from .model import SAM
-from .predict import Predictor, SAM2Predictor, SAM2VideoPredictor
+from .predict import Predictor, SAM2Predictor
 
-__all__ = "SAM", "Predictor", "SAM2Predictor", "SAM2VideoPredictor"  # tuple or list
+__all__ = "SAM", "Predictor", "SAM2Predictor"  # tuple or list

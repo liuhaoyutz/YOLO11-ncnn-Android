@@ -1,4 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 """
 SAM model interface.
 
@@ -148,7 +148,7 @@ class SAM(Model):
             verbose (bool): If True, prints the information to the console.
 
         Returns:
-            (tuple): A tuple containing the model's information (string representations of the model).
+            (Tuple): A tuple containing the model's information (string representations of the model).
 
         Examples:
             >>> sam = SAM("sam_b.pt")

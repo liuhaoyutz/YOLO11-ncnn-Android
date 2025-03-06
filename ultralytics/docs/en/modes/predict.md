@@ -120,7 +120,6 @@ YOLO11 can process different types of input sources for inference, as shown in t
 | YouTube ✅                                            | `'https://youtu.be/LNwODJXcvt4'`           | `str`           | URL to a YouTube video.                                                                     |
 | stream ✅                                             | `'rtsp://example.com/media.mp4'`           | `str`           | URL for streaming protocols such as RTSP, RTMP, TCP, or an IP address.                      |
 | multi-stream ✅                                       | `'list.streams'`                           | `str` or `Path` | `*.streams` text file with one stream URL per row, i.e. 8 streams will run at batch-size 8. |
-| webcam ✅                                             | `0`                                        | `int`           | Index of the connected camera device to run inference on.                                   |
 
 Below are code examples for using each source type:
 
@@ -377,20 +376,6 @@ Below are code examples for using each source type:
 
         Each row in the file represents a streaming source, allowing you to monitor and perform inference on several video streams at once.
 
-    === "Webcam"
-
-        You can run inference on a connected camera device by passing the index of that particular camera to `source`.
-
-        ```python
-        from ultralytics import YOLO
-
-        # Load a pretrained YOLO11n model
-        model = YOLO("yolo11n.pt")
-
-        # Run inference on the source
-        results = model(source=0, stream=True)  # generator of Results objects
-        ```
-
 ## Inference Arguments
 
 `model.predict()` accepts multiple arguments that can be passed at inference time to override defaults:
@@ -404,7 +389,7 @@ Below are code examples for using each source type:
     model = YOLO("yolo11n.pt")
 
     # Run inference on 'bus.jpg' with arguments
-    model.predict("https://ultralytics.com/images/bus.jpg", save=True, imgsz=320, conf=0.5)
+    model.predict("bus.jpg", save=True, imgsz=320, conf=0.5)
     ```
 
 Inference arguments:
@@ -423,10 +408,6 @@ YOLO11 supports various image and video formats, as specified in [ultralytics/da
 
 The below table contains valid Ultralytics image formats.
 
-!!! note
-
-    HEIC images are supported for inference only, not for training.
-
 | Image Suffixes | Example Predict Command          | Reference                                                                  |
 | -------------- | -------------------------------- | -------------------------------------------------------------------------- |
 | `.bmp`         | `yolo predict source=image.bmp`  | [Microsoft BMP File Format](https://en.wikipedia.org/wiki/BMP_file_format) |
@@ -439,7 +420,6 @@ The below table contains valid Ultralytics image formats.
 | `.tiff`        | `yolo predict source=image.tiff` | [Tag Image File Format](https://en.wikipedia.org/wiki/TIFF)                |
 | `.webp`        | `yolo predict source=image.webp` | [WebP](https://en.wikipedia.org/wiki/WebP)                                 |
 | `.pfm`         | `yolo predict source=image.pfm`  | [Portable FloatMap](https://en.wikipedia.org/wiki/Netpbm#File_formats)     |
-| `.HEIC`        | `yolo predict source=image.HEIC` | [High Efficiency Image Format](https://en.wikipedia.org/wiki/HEIF)         |
 
 ### Videos
 
@@ -473,10 +453,8 @@ All Ultralytics `predict()` calls will return a list of `Results` objects:
     model = YOLO("yolo11n.pt")
 
     # Run inference on an image
-    results = model("https://ultralytics.com/images/bus.jpg")  # list of 1 Results object
-    results = model(
-        ["https://ultralytics.com/images/bus.jpg", "https://ultralytics.com/images/zidane.jpg"]
-    )  # list of 2 Results objects
+    results = model("bus.jpg")  # list of 1 Results object
+    results = model(["bus.jpg", "zidane.jpg"])  # list of 2 Results objects
     ```
 
 `Results` objects have the following attributes:
@@ -510,12 +488,7 @@ All Ultralytics `predict()` calls will return a list of `Results` objects:
 | `verbose()`   | `str`           | Return log string for each task.                                                    |
 | `save_txt()`  | `None`          | Save predictions into a txt file.                                                   |
 | `save_crop()` | `None`          | Save cropped predictions to `save_dir/cls/file_name.jpg`.                           |
-| `summary()`   | `List[Dict]`    | A list of dictionaries, each containing summarized information for results          |
-| `to_df()`     | `DataFrame`     | Convert the results to Pandas Dataframe.                                            |
-| `to_csv()`    | `str`           | Convert the result to CSV (comma separated values) format.                          |
-| `to_xml()`    | `str`           | Convert the results to XML (Extensible Markup Language) format.                     |
-| `to_json()`   | `str`           | Convert the results to JSON format.                                                 |
-| `to_sql()`    | `None`          | Dump the results into the SQL database.                                             |
+| `tojson()`    | `str`           | Convert the object to JSON format.                                                  |
 
 For more details see the [`Results` class documentation](../reference/engine/results.md).
 
@@ -532,7 +505,7 @@ For more details see the [`Results` class documentation](../reference/engine/res
     model = YOLO("yolo11n.pt")
 
     # Run inference on an image
-    results = model("https://ultralytics.com/images/bus.jpg")  # results list
+    results = model("bus.jpg")  # results list
 
     # View results
     for r in results:
@@ -570,7 +543,7 @@ For more details see the [`Boxes` class documentation](../reference/engine/resul
     model = YOLO("yolo11n-seg.pt")
 
     # Run inference on an image
-    results = model("https://ultralytics.com/images/bus.jpg")  # results list
+    results = model("bus.jpg")  # results list
 
     # View results
     for r in results:
@@ -603,7 +576,7 @@ For more details see the [`Masks` class documentation](../reference/engine/resul
     model = YOLO("yolo11n-pose.pt")
 
     # Run inference on an image
-    results = model("https://ultralytics.com/images/bus.jpg")  # results list
+    results = model("bus.jpg")  # results list
 
     # View results
     for r in results:
@@ -637,7 +610,7 @@ For more details see the [`Keypoints` class documentation](../reference/engine/r
     model = YOLO("yolo11n-cls.pt")
 
     # Run inference on an image
-    results = model("https://ultralytics.com/images/bus.jpg")  # results list
+    results = model("bus.jpg")  # results list
 
     # View results
     for r in results:
@@ -672,7 +645,7 @@ For more details see the [`Probs` class documentation](../reference/engine/resul
     model = YOLO("yolo11n-obb.pt")
 
     # Run inference on an image
-    results = model("https://ultralytics.com/images/boats.jpg")  # results list
+    results = model("bus.jpg")  # results list
 
     # View results
     for r in results:
@@ -712,7 +685,7 @@ The `plot()` method in `Results` objects facilitates visualization of prediction
     model = YOLO("yolo11n.pt")
 
     # Run inference on 'bus.jpg'
-    results = model(["https://ultralytics.com/images/bus.jpg", "https://ultralytics.com/images/zidane.jpg"])  # results list
+    results = model(["bus.jpg", "zidane.jpg"])  # results list
 
     # Visualize the results
     for i, r in enumerate(results):

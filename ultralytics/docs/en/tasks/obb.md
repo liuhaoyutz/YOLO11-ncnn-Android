@@ -49,7 +49,7 @@ YOLO11 pretrained OBB models are shown here, which are pretrained on the [DOTAv1
 
 ## Train
 
-Train YOLO11n-obb on the DOTA8 dataset for 100 [epochs](https://www.ultralytics.com/glossary/epoch) at image size 640. For a full list of available arguments see the [Configuration](../usage/cfg.md) page.
+Train YOLO11n-obb on the `dota8.yaml` dataset for 100 [epochs](https://www.ultralytics.com/glossary/epoch) at image size 640. For a full list of available arguments see the [Configuration](../usage/cfg.md) page.
 
 !!! example
 
@@ -141,21 +141,14 @@ Use a trained YOLO11n-obb model to run predictions on images.
         model = YOLO("path/to/best.pt")  # load a custom model
 
         # Predict with the model
-        results = model("https://ultralytics.com/images/boats.jpg")  # predict on an image
-
-        # Access the results
-        for result in results:
-            xywhr = result.keypoints.xy  # center-x, center-y, width, height, angle (radians)
-            xyxyxyxy = result.obb.xyxyxyxy  # polygon format with 4-points
-            names = [result.names[cls.item()] for cls in result.obb.cls.int()]  # class name of each box
-            confs = result.obb.conf  # confidence score of each box
+        results = model("https://ultralytics.com/images/bus.jpg")  # predict on an image
         ```
 
     === "CLI"
 
         ```bash
-        yolo obb predict model=yolo11n-obb.pt source='https://ultralytics.com/images/boats.jpg'  # predict with official model
-        yolo obb predict model=path/to/best.pt source='https://ultralytics.com/images/boats.jpg'  # predict with custom model
+        yolo obb predict model=yolo11n-obb.pt source='https://ultralytics.com/images/bus.jpg'  # predict with official model
+        yolo obb predict model=path/to/best.pt source='https://ultralytics.com/images/bus.jpg'  # predict with custom model
         ```
 
 <p align="center">

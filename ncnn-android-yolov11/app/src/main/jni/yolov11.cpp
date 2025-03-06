@@ -259,8 +259,8 @@ int Inference::loadNcnnNetwork(AAssetManager* mgr, const char* modeltype , const
 
     char parampath[256];
     char modelpath[256];
-    sprintf(parampath, "yolov11%s_ncnn_model/yolov11n.ncnn.param", modeltype);
-    sprintf(modelpath, "yolov11%s_ncnn_model/yolov11n.ncnn.bin", modeltype);
+    sprintf(parampath, "yolov11%s_ncnn_model/yolov11%s.ncnn.param", modeltype, modeltype);
+    sprintf(modelpath, "yolov11%s_ncnn_model/yolov11%s.ncnn.bin", modeltype, modeltype);
 
     net.load_param(mgr, parampath);
     net.load_model(mgr, modelpath);
@@ -392,6 +392,7 @@ std::vector<Object> Inference::runInference(const cv::Mat &bgr)
 
 int Inference::draw(cv::Mat& bgr, const std::vector<Object>& objects) 
 {
+    /* 
     static const char* class_names[] = {
 		"person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
 		"fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
@@ -402,6 +403,10 @@ int Inference::draw(cv::Mat& bgr, const std::vector<Object>& objects)
 		"potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone",
 		"microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear",
 		"hair drier", "toothbrush"
+	};
+    */
+    static const char* class_names[] = {
+        "Hardhat", "Mask", "NO-Hardhat", "NO-Mask", "NO-Safety Vest", "Person", "Safety Cone", "Safety Vest", "machinery", "vehicle"
 	};
     cv::Mat res = bgr;
     for (size_t i = 0; i < objects.size(); i++)

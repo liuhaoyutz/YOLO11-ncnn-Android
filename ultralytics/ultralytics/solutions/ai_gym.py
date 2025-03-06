@@ -1,39 +1,16 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 
-from ultralytics.solutions.solutions import BaseSolution
+from ultralytics.solutions.solutions import BaseSolution  # Import a parent class
 from ultralytics.utils.plotting import Annotator
 
 
 class AIGym(BaseSolution):
-    """
-    A class to manage gym steps of people in a real-time video stream based on their poses.
-
-    This class extends BaseSolution to monitor workouts using YOLO pose estimation models. It tracks and counts
-    repetitions of exercises based on predefined angle thresholds for up and down positions.
-
-    Attributes:
-        count (List[int]): Repetition counts for each detected person.
-        angle (List[float]): Current angle of the tracked body part for each person.
-        stage (List[str]): Current exercise stage ('up', 'down', or '-') for each person.
-        initial_stage (str | None): Initial stage of the exercise.
-        up_angle (float): Angle threshold for considering the 'up' position of an exercise.
-        down_angle (float): Angle threshold for considering the 'down' position of an exercise.
-        kpts (List[int]): Indices of keypoints used for angle calculation.
-        annotator (Annotator): Object for drawing annotations on the image.
-
-    Methods:
-        monitor: Processes a frame to detect poses, calculate angles, and count repetitions.
-
-    Examples:
-        >>> gym = AIGym(model="yolo11n-pose.pt")
-        >>> image = cv2.imread("gym_scene.jpg")
-        >>> processed_image = gym.monitor(image)
-        >>> cv2.imshow("Processed Image", processed_image)
-        >>> cv2.waitKey(0)
-    """
+    """A class to manage the gym steps of people in a real-time video stream based on their poses."""
 
     def __init__(self, **kwargs):
-        """Initializes AIGym for workout monitoring using pose estimation and predefined angles."""
+        """Initialization function for AiGYM class, a child class of BaseSolution class, can be used for workouts
+        monitoring.
+        """
         # Check if the model name ends with '-pose'
         if "model" in kwargs and "-pose" not in kwargs["model"]:
             kwargs["model"] = "yolo11n-pose.pt"
@@ -50,28 +27,19 @@ class AIGym(BaseSolution):
         self.up_angle = float(self.CFG["up_angle"])  # Pose up predefined angle to consider up pose
         self.down_angle = float(self.CFG["down_angle"])  # Pose down predefined angle to consider down pose
         self.kpts = self.CFG["kpts"]  # User selected kpts of workouts storage for further usage
+        self.lw = self.CFG["line_width"]  # Store line_width for usage
 
     def monitor(self, im0):
         """
-        Monitors workouts using Ultralytics YOLO Pose Model.
-
-        This function processes an input image to track and analyze human poses for workout monitoring. It uses
-        the YOLO Pose model to detect keypoints, estimate angles, and count repetitions based on predefined
-        angle thresholds.
+        Monitor the workouts using Ultralytics YOLOv8 Pose Model: https://docs.ultralytics.com/tasks/pose/.
 
         Args:
-            im0 (ndarray): Input image for processing.
-
-        Returns:
-            (ndarray): Processed image with annotations for workout monitoring.
-
-        Examples:
-            >>> gym = AIGym()
-            >>> image = cv2.imread("workout.jpg")
-            >>> processed_image = gym.monitor(image)
+            im0 (ndarray): The input image that will be used for processing
+        Returns
+            im0 (ndarray): The processed image for more usage
         """
         # Extract tracks
-        tracks = self.model.track(source=im0, persist=True, classes=self.CFG["classes"], **self.track_add_args)[0]
+        tracks = self.model.track(source=im0, persist=True, classes=self.CFG["classes"])[0]
 
         if tracks.boxes.id is not None:
             # Extract and check keypoints
@@ -82,14 +50,14 @@ class AIGym(BaseSolution):
                 self.stage += ["-"] * new_human
 
             # Initialize annotator
-            self.annotator = Annotator(im0, line_width=self.line_width)
+            self.annotator = Annotator(im0, line_width=self.lw)
 
             # Enumerate over keypoints
             for ind, k in enumerate(reversed(tracks.keypoints.data)):
                 # Get keypoints and estimate the angle
                 kpts = [k[int(self.kpts[i])].cpu() for i in range(3)]
                 self.angle[ind] = self.annotator.estimate_pose_angle(*kpts)
-                im0 = self.annotator.draw_specific_points(k, self.kpts, radius=self.line_width * 3)
+                im0 = self.annotator.draw_specific_points(k, self.kpts, radius=self.lw * 3)
 
                 # Determine stage and count logic based on angle thresholds
                 if self.angle[ind] < self.down_angle:

@@ -1,4 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 
 from ultralytics.utils import ASSETS, ROOT, WEIGHTS_DIR, checks
 
@@ -17,6 +17,7 @@ __all__ = (
     "SOURCE",
     "SOURCES_LIST",
     "TMP",
+    "IS_TMP_WRITEABLE",
     "CUDA_IS_AVAILABLE",
     "CUDA_DEVICE_COUNT",
 )

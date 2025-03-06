@@ -109,12 +109,4 @@ keywords: Ultralytics, YOLO, utility functions, version checks, requirements, im
 
 ## ::: ultralytics.utils.checks.cuda_is_available
 
-<br><br><hr><br>
-
-## ::: ultralytics.utils.checks.is_rockchip
-
-<br><br><hr><br>
-
-## ::: ultralytics.utils.checks.is_sudo_available
-
 <br><br>

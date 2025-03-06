@@ -1,5 +1,6 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 
+import contextlib
 import re
 import shutil
 import subprocess
@@ -18,7 +19,6 @@ GITHUB_ASSETS_REPO = "ultralytics/assets"
 GITHUB_ASSETS_NAMES = (
     [f"yolov8{k}{suffix}.pt" for k in "nsmlx" for suffix in ("", "-cls", "-seg", "-pose", "-obb", "-oiv7")]
     + [f"yolo11{k}{suffix}.pt" for k in "nsmlx" for suffix in ("", "-cls", "-seg", "-pose", "-obb")]
-    + [f"yolo12{k}{suffix}.pt" for k in "nsmlx" for suffix in ("",)]  # detect models only currently
     + [f"yolov5{k}{resolution}u.pt" for k in "nsmlx" for resolution in ("", "6")]
     + [f"yolov3{k}u.pt" for k in ("", "-spp", "-tiny")]
     + [f"yolov8{k}-world.pt" for k in "smlx"]
@@ -53,7 +53,7 @@ def is_url(url, check=False):
         valid = is_url("https://www.example.com")
         ```
     """
-    try:
+    with contextlib.suppress(Exception):
         url = str(url)
         result = parse.urlparse(url)
         assert all([result.scheme, result.netloc])  # check if is url
@@ -61,8 +61,7 @@ def is_url(url, check=False):
             with request.urlopen(url) as response:
                 return response.getcode() == 200  # check if exists online
         return True
-    except Exception:
-        return False
+    return False
 
 
 def delete_dsstore(path, files_to_delete=(".DS_Store", "__MACOSX")):
@@ -139,7 +138,7 @@ def unzip_file(file, path=None, exclude=(".DS_Store", "__MACOSX"), exist_ok=Fals
     If a path is not provided, the function will use the parent directory of the zipfile as the default path.
 
     Args:
-        file (str | Path): The path to the zipfile to be extracted.
+        file (str): The path to the zipfile to be extracted.
         path (str, optional): The path to extract the zipfile to. Defaults to None.
         exclude (tuple, optional): A tuple of filename strings to be excluded. Defaults to ('.DS_Store', '__MACOSX').
         exist_ok (bool, optional): Whether to overwrite existing contents if they exist. Defaults to False.
@@ -270,7 +269,8 @@ def get_google_drive_file_info(link):
         for k, v in response.cookies.items():
             if k.startswith("download_warning"):
                 drive_url += f"&confirm={v}"  # v is token
-        if cd := response.headers.get("content-disposition"):
+        cd = response.headers.get("content-disposition")
+        if cd:
             filename = re.findall('filename="(.+)"', cd)[0]
     return drive_url, filename
 
@@ -406,7 +406,7 @@ def get_github_assets(repo="ultralytics/assets", version="latest", retry=False):
         LOGGER.warning(f"⚠️ GitHub assets check failure for {url}: {r.status_code} {r.reason}")
         return "", []
     data = r.json()
-    return data["tag_name"], [x["name"] for x in data["assets"]]  # tag, assets i.e. ['yolo11n.pt', 'yolov8s.pt', ...]
+    return data["tag_name"], [x["name"] for x in data["assets"]]  # tag, assets i.e. ['yolov8n.pt', 'yolov8s.pt', ...]
 
 
 def attempt_download_asset(file, repo="ultralytics/assets", release="v8.3.0", **kwargs):
@@ -425,7 +425,7 @@ def attempt_download_asset(file, repo="ultralytics/assets", release="v8.3.0", **
 
     Example:
         ```python
-        file_path = attempt_download_asset("yolo11n.pt", repo="ultralytics/assets", release="latest")
+        file_path = attempt_download_asset("yolov8n.pt", repo="ultralytics/assets", release="latest")
         ```
     """
     from ultralytics.utils import SETTINGS  # scoped for circular import

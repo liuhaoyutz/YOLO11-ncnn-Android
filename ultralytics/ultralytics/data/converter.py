@@ -1,4 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 
 import json
 import random
@@ -241,10 +241,8 @@ def convert_coco(
         ```python
         from ultralytics.data.converter import convert_coco
 
-        convert_coco("../datasets/coco/annotations/", use_segments=True, use_keypoints=False, cls91to80=False)
-        convert_coco(
-            "../datasets/lvis/annotations/", use_segments=True, use_keypoints=False, cls91to80=False, lvis=True
-        )
+        convert_coco("../datasets/coco/annotations/", use_segments=True, use_keypoints=False, cls91to80=True)
+        convert_coco("../datasets/lvis/annotations/", use_segments=True, use_keypoints=False, cls91to80=False, lvis=True)
         ```
 
     Output:
@@ -268,19 +266,19 @@ def convert_coco(
             # since LVIS val set contains images from COCO 2017 train in addition to the COCO 2017 val split.
             (fn / "train2017").mkdir(parents=True, exist_ok=True)
             (fn / "val2017").mkdir(parents=True, exist_ok=True)
-        with open(json_file, encoding="utf-8") as f:
+        with open(json_file) as f:
             data = json.load(f)
 
         # Create image dict
-        images = {f"{x['id']:d}": x for x in data["images"]}
+        images = {f'{x["id"]:d}': x for x in data["images"]}
         # Create image-annotations dict
-        annotations = defaultdict(list)
+        imgToAnns = defaultdict(list)
         for ann in data["annotations"]:
-            annotations[ann["image_id"]].append(ann)
+            imgToAnns[ann["image_id"]].append(ann)
 
         image_txt = []
         # Write labels file
-        for img_id, anns in TQDM(annotations.items(), desc=f"Annotations {json_file}"):
+        for img_id, anns in TQDM(imgToAnns.items(), desc=f"Annotations {json_file}"):
             img = images[f"{img_id:d}"]
             h, w = img["height"], img["width"]
             f = str(Path(img["coco_url"]).relative_to("http://images.cocodataset.org")) if lvis else img["file_name"]
@@ -379,7 +377,7 @@ def convert_segment_masks_to_yolo_seg(masks_dir, output_dir, classes):
     """
     pixel_to_class_mapping = {i + 1: i for i in range(classes)}
     for mask_path in Path(masks_dir).iterdir():
-        if mask_path.suffix in {".png", ".jpg"}:
+        if mask_path.suffix == ".png":
             mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)  # Read the mask image in grayscale
             img_height, img_width = mask.shape  # Get image dimensions
             LOGGER.info(f"Processing {mask_path} imgsz = {img_height} x {img_width}")
@@ -579,7 +577,7 @@ def merge_multi_segment(segments):
     return s
 
 
-def yolo_bbox2segment(im_dir, save_dir=None, sam_model="sam_b.pt", device=None):
+def yolo_bbox2segment(im_dir, save_dir=None, sam_model="sam_b.pt"):
     """
     Converts existing object detection dataset (bounding boxes) to segmentation dataset or oriented bounding box (OBB)
     in YOLO format. Generates segmentation data using SAM auto-annotator as needed.
@@ -589,7 +587,6 @@ def yolo_bbox2segment(im_dir, save_dir=None, sam_model="sam_b.pt", device=None):
         save_dir (str | Path): Path to save the generated labels, labels will be saved
             into `labels-segment` in the same directory level of `im_dir` if save_dir is None. Default: None.
         sam_model (str): Segmentation model to use for intermediate segmentation data; optional.
-        device (int | str): The specific device to run SAM models. Default: None.
 
     Notes:
         The input directory structure assumed for dataset:
@@ -624,7 +621,7 @@ def yolo_bbox2segment(im_dir, save_dir=None, sam_model="sam_b.pt", device=None):
         boxes[:, [0, 2]] *= w
         boxes[:, [1, 3]] *= h
         im = cv2.imread(label["im_file"])
-        sam_results = sam_model(im, bboxes=xywh2xyxy(boxes), verbose=False, save=False, device=device)
+        sam_results = sam_model(im, bboxes=xywh2xyxy(boxes), verbose=False, save=False)
         label["segments"] = sam_results[0].masks.xyn
 
     save_dir = Path(save_dir) if save_dir else Path(im_dir).parent / "labels-segment"
@@ -635,12 +632,11 @@ def yolo_bbox2segment(im_dir, save_dir=None, sam_model="sam_b.pt", device=None):
         txt_file = save_dir / lb_name
         cls = label["cls"]
         for i, s in enumerate(label["segments"]):
-            if len(s) == 0:
-                continue
             line = (int(cls[i]), *s.reshape(-1))
             texts.append(("%g " * len(line)).rstrip() % line)
-        with open(txt_file, "a") as f:
-            f.writelines(text + "\n" for text in texts)
+        if texts:
+            with open(txt_file, "a") as f:
+                f.writelines(text + "\n" for text in texts)
     LOGGER.info(f"Generated segment labels saved in {save_dir}")
 
 

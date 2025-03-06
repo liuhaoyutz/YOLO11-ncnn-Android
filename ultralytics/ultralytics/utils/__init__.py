@@ -1,4 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 
 import contextlib
 import importlib.metadata
@@ -12,20 +12,19 @@ import subprocess
 import sys
 import threading
 import time
+import urllib
 import uuid
-import warnings
 from pathlib import Path
 from threading import Lock
 from types import SimpleNamespace
 from typing import Union
-from urllib.parse import unquote
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import tqdm
 import yaml
+from tqdm import tqdm as tqdm_original
 
 from ultralytics import __version__
 
@@ -38,9 +37,7 @@ ARGV = sys.argv or ["", ""]  # sometimes sys.argv = []
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # YOLO
 ASSETS = ROOT / "assets"  # default images
-ASSETS_URL = "https://github.com/ultralytics/assets/releases/download/v0.0.0"  # assets GitHub URL
 DEFAULT_CFG_PATH = ROOT / "cfg/default.yaml"
-DEFAULT_SOL_CFG_PATH = ROOT / "cfg/solutions/default.yaml"  # Ultralytics solutions yaml path
 NUM_THREADS = min(8, max(1, os.cpu_count() - 1))  # number of YOLO multiprocessing threads
 AUTOINSTALL = str(os.getenv("YOLO_AUTOINSTALL", True)).lower() == "true"  # global auto-install mode
 VERBOSE = str(os.getenv("YOLO_VERBOSE", True)).lower() == "true"  # global verbose mode
@@ -52,20 +49,6 @@ PYTHON_VERSION = platform.python_version()
 TORCH_VERSION = torch.__version__
 TORCHVISION_VERSION = importlib.metadata.version("torchvision")  # faster than importing torchvision
 IS_VSCODE = os.environ.get("TERM_PROGRAM", False) == "vscode"
-RKNN_CHIPS = frozenset(
-    {
-        "rk3588",
-        "rk3576",
-        "rk3566",
-        "rk3568",
-        "rk3562",
-        "rv1103",
-        "rv1106",
-        "rv1103b",
-        "rv1106b",
-        "rk2118",
-    }
-)  # Rockchip processors available for export
 HELP_MSG = """
     Examples for running Ultralytics:
 
@@ -128,15 +111,13 @@ torch.set_printoptions(linewidth=320, precision=4, profile="default")
 np.set_printoptions(linewidth=320, formatter={"float_kind": "{:11.5g}".format})  # format short g, %precision=5
 cv2.setNumThreads(0)  # prevent OpenCV from multithreading (incompatible with PyTorch DataLoader)
 os.environ["NUMEXPR_MAX_THREADS"] = str(NUM_THREADS)  # NumExpr max threads
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"  # for deterministic training to avoid CUDA warning
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # suppress verbose TF compiler warnings in Colab
 os.environ["TORCH_CPP_LOG_LEVEL"] = "ERROR"  # suppress "NNPACK.cpp could not initialize NNPACK" warnings
 os.environ["KINETO_LOG_LEVEL"] = "5"  # suppress verbose PyTorch profiler output when computing FLOPs
 
-if TQDM_RICH := str(os.getenv("YOLO_TQDM_RICH", False)).lower() == "true":
-    from tqdm import rich
 
-
-class TQDM(rich.tqdm if TQDM_RICH else tqdm.tqdm):
+class TQDM(tqdm_original):
     """
     A custom TQDM progress bar class that extends the original tqdm functionality.
 
@@ -179,8 +160,7 @@ class TQDM(rich.tqdm if TQDM_RICH else tqdm.tqdm):
             ...     # Your code here
             ...     pass
         """
-        warnings.filterwarnings("ignore", category=tqdm.TqdmExperimentalWarning)  # suppress tqdm.rich warning
-        kwargs["disable"] = not VERBOSE or kwargs.get("disable", False)
+        kwargs["disable"] = not VERBOSE or kwargs.get("disable", False)  # logical 'and' with default value if passed
         kwargs.setdefault("bar_format", TQDM_BAR_FORMAT)  # override default value if passed
         super().__init__(*args, **kwargs)
 
@@ -528,7 +508,6 @@ def yaml_print(yaml_file: Union[str, Path, dict]) -> None:
 
 # Default configuration
 DEFAULT_CFG_DICT = yaml_load(DEFAULT_CFG_PATH)
-DEFAULT_SOL_DICT = yaml_load(DEFAULT_SOL_CFG_PATH)  # Ultralytics solutions configuration
 for k, v in DEFAULT_CFG_DICT.items():
     if isinstance(v, str) and v.lower() == "none":
         DEFAULT_CFG_DICT[k] = None
@@ -542,9 +521,12 @@ def read_device_model() -> str:
     is_raspberrypi().
 
     Returns:
-        (str): Kernel release information.
+        (str): Model file contents if read successfully or empty string otherwise.
     """
-    return platform.release().lower()
+    with contextlib.suppress(Exception):
+        with open("/proc/device-tree/model") as f:
+            return f.read()
+    return ""
 
 
 def is_ubuntu() -> bool:
@@ -554,11 +536,10 @@ def is_ubuntu() -> bool:
     Returns:
         (bool): True if OS is Ubuntu, False otherwise.
     """
-    try:
+    with contextlib.suppress(FileNotFoundError):
         with open("/etc/os-release") as f:
             return "ID=ubuntu" in f.read()
-    except FileNotFoundError:
-        return False
+    return False
 
 
 def is_colab():
@@ -583,26 +564,16 @@ def is_kaggle():
 
 def is_jupyter():
     """
-    Check if the current script is running inside a Jupyter Notebook.
+    Check if the current script is running inside a Jupyter Notebook. Verified on Colab, Jupyterlab, Kaggle, Paperspace.
 
     Returns:
         (bool): True if running inside a Jupyter Notebook, False otherwise.
-
-    Note:
-        - Only works on Colab and Kaggle, other environments like Jupyterlab and Paperspace are not reliably detectable.
-        - "get_ipython" in globals() method suffers false positives when IPython package installed manually.
     """
-    return IS_COLAB or IS_KAGGLE
+    with contextlib.suppress(Exception):
+        from IPython import get_ipython
 
-
-def is_runpod():
-    """
-    Check if the current script is running inside a RunPod container.
-
-    Returns:
-        (bool): True if running in RunPod, False otherwise.
-    """
-    return "RUNPOD_POD_ID" in os.environ
+        return get_ipython() is not None
+    return False
 
 
 def is_docker() -> bool:
@@ -612,11 +583,10 @@ def is_docker() -> bool:
     Returns:
         (bool): True if the script is running inside a Docker container, False otherwise.
     """
-    try:
+    with contextlib.suppress(Exception):
         with open("/proc/self/cgroup") as f:
             return "docker" in f.read()
-    except Exception:
-        return False
+    return False
 
 
 def is_raspberrypi() -> bool:
@@ -626,17 +596,18 @@ def is_raspberrypi() -> bool:
     Returns:
         (bool): True if running on a Raspberry Pi, False otherwise.
     """
-    return "rpi" in DEVICE_MODEL
+    return "Raspberry Pi" in PROC_DEVICE_MODEL
 
 
 def is_jetson() -> bool:
     """
-    Determines if the Python environment is running on an NVIDIA Jetson device by checking the device model information.
+    Determines if the Python environment is running on a Jetson Nano or Jetson Orin device by checking the device model
+    information.
 
     Returns:
-        (bool): True if running on an NVIDIA Jetson device, False otherwise.
+        (bool): True if running on a Jetson Nano or Jetson Orin, False otherwise.
     """
-    return "tegra" in DEVICE_MODEL
+    return "NVIDIA" in PROC_DEVICE_MODEL  # i.e. "NVIDIA Jetson Nano" or "NVIDIA Orin NX"
 
 
 def is_online() -> bool:
@@ -646,15 +617,14 @@ def is_online() -> bool:
     Returns:
         (bool): True if connection is successful, False otherwise.
     """
-    try:
+    with contextlib.suppress(Exception):
         assert str(os.getenv("YOLO_OFFLINE", "")).lower() != "true"  # check if ENV var YOLO_OFFLINE="True"
         import socket
 
         for dns in ("1.1.1.1", "8.8.8.8"):  # check Cloudflare and Google DNS
             socket.create_connection(address=(dns, 80), timeout=2.0).close()
             return True
-    except Exception:
-        return False
+    return False
 
 
 def is_pip_package(filepath: str = __name__) -> bool:
@@ -741,11 +711,9 @@ def get_git_origin_url():
         (str | None): The origin URL of the git repository or None if not git directory.
     """
     if IS_GIT_DIR:
-        try:
+        with contextlib.suppress(subprocess.CalledProcessError):
             origin = subprocess.check_output(["git", "config", "--get", "remote.origin.url"])
             return origin.decode().strip()
-        except subprocess.CalledProcessError:
-            return None
 
 
 def get_git_branch():
@@ -756,11 +724,9 @@ def get_git_branch():
         (str | None): The current git branch name or None if not a git directory.
     """
     if IS_GIT_DIR:
-        try:
+        with contextlib.suppress(subprocess.CalledProcessError):
             origin = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"])
             return origin.decode().strip()
-        except subprocess.CalledProcessError:
-            return None
 
 
 def get_default_args(func):
@@ -785,11 +751,9 @@ def get_ubuntu_version():
         (str): Ubuntu version or None if not an Ubuntu OS.
     """
     if is_ubuntu():
-        try:
+        with contextlib.suppress(FileNotFoundError, AttributeError):
             with open("/etc/os-release") as f:
                 return re.search(r'VERSION_ID="(\d+\.\d+)"', f.read())[1]
-        except (FileNotFoundError, AttributeError):
-            return None
 
 
 def get_user_config_dir(sub_dir="Ultralytics"):
@@ -826,13 +790,13 @@ def get_user_config_dir(sub_dir="Ultralytics"):
 
 
 # Define constants (required below)
-DEVICE_MODEL = read_device_model()  # is_jetson() and is_raspberrypi() depend on this constant
+PROC_DEVICE_MODEL = read_device_model()  # is_jetson() and is_raspberrypi() depend on this constant
 ONLINE = is_online()
 IS_COLAB = is_colab()
-IS_KAGGLE = is_kaggle()
 IS_DOCKER = is_docker()
 IS_JETSON = is_jetson()
 IS_JUPYTER = is_jupyter()
+IS_KAGGLE = is_kaggle()
 IS_PIP_PACKAGE = is_pip_package()
 IS_RASPBERRYPI = is_raspberrypi()
 GIT_DIR = get_git_dir()
@@ -1070,7 +1034,7 @@ def set_sentry():
         auto_enabling_integrations=False,
         traces_sample_rate=1.0,
         release=__version__,
-        environment="runpod" if is_runpod() else "production",
+        environment="production",  # 'dev' or 'production'
         before_send=before_send,
         ignore_errors=[KeyboardInterrupt, FileNotFoundError],
     )
@@ -1154,8 +1118,7 @@ class JSONDict(dict):
 
     def __str__(self):
         """Return a pretty-printed JSON string representation of the dictionary."""
-        contents = json.dumps(dict(self), indent=2, ensure_ascii=False, default=self._json_default)
-        return f'JSONDict("{self.file_path}"):\n{contents}'
+        return f'JSONDict("{self.file_path}"):\n{json.dumps(dict(self), indent=2, ensure_ascii=False, default=self._json_default)}'
 
     def update(self, *args, **kwargs):
         """Update the dictionary and persist changes."""
@@ -1224,7 +1187,7 @@ class SettingsManager(JSONDict):
             "neptune": True,  # Neptune integration
             "raytune": True,  # Ray Tune integration
             "tensorboard": True,  # TensorBoard logging
-            "wandb": False,  # Weights & Biases logging
+            "wandb": True,  # Weights & Biases logging
             "vscode_msg": True,  # VSCode messaging
         }
 
@@ -1245,7 +1208,7 @@ class SettingsManager(JSONDict):
 
     def _validate_settings(self):
         """Validate the current settings and reset if necessary."""
-        correct_keys = frozenset(self.keys()) == frozenset(self.defaults.keys())
+        correct_keys = set(self.keys()) == set(self.defaults.keys())
         correct_types = all(isinstance(self.get(k), type(v)) for k, v in self.defaults.items())
         correct_version = self.get("settings_version", "") == self.version
 
@@ -1263,23 +1226,14 @@ class SettingsManager(JSONDict):
                 f"Please change one to avoid possible issues during training. {self.help_msg}"
             )
 
-    def __setitem__(self, key, value):
-        """Updates one key: value pair."""
-        self.update({key: value})
-
     def update(self, *args, **kwargs):
         """Updates settings, validating keys and types."""
-        for arg in args:
-            if isinstance(arg, dict):
-                kwargs.update(arg)
         for k, v in kwargs.items():
             if k not in self.defaults:
                 raise KeyError(f"No Ultralytics setting '{k}'. {self.help_msg}")
             t = type(self.defaults[k])
             if not isinstance(v, t):
-                raise TypeError(
-                    f"Ultralytics setting '{k}' must be '{t.__name__}' type, not '{type(v).__name__}'. {self.help_msg}"
-                )
+                raise TypeError(f"Ultralytics setting '{k}' must be of type '{t}', not '{type(v)}'. {self.help_msg}")
         super().update(*args, **kwargs)
 
     def reset(self):
@@ -1288,18 +1242,15 @@ class SettingsManager(JSONDict):
         self.update(self.defaults)
 
 
-def deprecation_warn(arg, new_arg=None):
+def deprecation_warn(arg, new_arg):
     """Issue a deprecation warning when a deprecated argument is used, suggesting an updated argument."""
-    msg = f"WARNING ⚠️ '{arg}' is deprecated and will be removed in in the future."
-    if new_arg is not None:
-        msg += f" Use '{new_arg}' instead."
-    LOGGER.warning(msg)
+    LOGGER.warning(f"WARNING ⚠️ '{arg}' is deprecated and will be removed in in the future. Use '{new_arg}' instead.")
 
 
 def clean_url(url):
     """Strip auth from URL, i.e. https://url.com/file.txt?auth -> https://url.com/file.txt."""
     url = Path(url).as_posix().replace(":/", "://")  # Pathlib turns :// -> :/, as_posix() for Windows
-    return unquote(url).split("?")[0]  # '%2F' to '/', split https://url.com/file.txt?auth
+    return urllib.parse.unquote(url).split("?")[0]  # '%2F' to '/', split https://url.com/file.txt?auth
 
 
 def url2file(url):

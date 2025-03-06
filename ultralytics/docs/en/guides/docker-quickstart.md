@@ -98,7 +98,7 @@ Here's how to execute the Ultralytics Docker container:
 ### Using only the CPU
 
 ```bash
-# Run without GPU
+# Run with all GPUs
 sudo docker run -it --ipc=host $t
 ```
 

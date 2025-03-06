@@ -1,4 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 """
 YOLO-NAS model interface.
 
@@ -16,7 +16,6 @@ from pathlib import Path
 import torch
 
 from ultralytics.engine.model import Model
-from ultralytics.utils import DEFAULT_CFG_DICT
 from ultralytics.utils.downloads import attempt_download_asset
 from ultralytics.utils.torch_utils import model_info
 
@@ -78,7 +77,6 @@ class NAS(Model):
         self.model.yaml = {}  # for info()
         self.model.pt_path = weights  # for export()
         self.model.task = "detect"  # for export()
-        self.model.args = {**DEFAULT_CFG_DICT, **self.overrides}  # for export()
 
     def info(self, detailed=False, verbose=True):
         """

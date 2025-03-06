@@ -1,5 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
-
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 # LVIS dataset http://www.lvisdataset.org by Facebook AI Research.
 # Documentation: https://docs.ultralytics.com/datasets/detect/lvis/
 # Example usage: yolo train data=lvis.yaml
@@ -12,7 +11,7 @@
 path: ../datasets/lvis # dataset root dir
 train: train.txt # train images (relative to 'path') 100170 images
 val: val.txt # val images (relative to 'path') 19809 images
-minival: minival.txt # minival images (relative to 'path') 5000 images
+minival: minival.txt # minval images (relative to 'path') 5000 images
 
 names:
   0: aerosol can/spray can

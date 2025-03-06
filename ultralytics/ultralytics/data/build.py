@@ -1,4 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 
 import os
 import random
@@ -46,18 +46,6 @@ class InfiniteDataLoader(dataloader.DataLoader):
         """Creates a sampler that repeats indefinitely."""
         for _ in range(len(self)):
             yield next(self.iterator)
-
-    def __del__(self):
-        """Ensure that workers are terminated."""
-        try:
-            if not hasattr(self.iterator, "_workers"):
-                return
-            for w in self.iterator._workers:  # force terminate
-                if w.is_alive():
-                    w.terminate()
-            self.iterator._shutdown_workers()  # cleanup
-        except Exception:
-            pass
 
     def reset(self):
         """

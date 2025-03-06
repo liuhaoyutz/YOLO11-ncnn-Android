@@ -1,4 +1,4 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics YOLO 🚀, AGPL-3.0 license
 """Convolution modules."""
 
 import math
@@ -21,7 +21,6 @@ __all__ = (
     "CBAM",
     "Concat",
     "RepConv",
-    "Index",
 )
 
 
@@ -51,7 +50,7 @@ class Conv(nn.Module):
         return self.act(self.bn(self.conv(x)))
 
     def forward_fuse(self, x):
-        """Apply convolution and activation without batch normalization."""
+        """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
 
 
@@ -331,20 +330,3 @@ class Concat(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat(x, self.d)
-
-
-class Index(nn.Module):
-    """Returns a particular index of the input."""
-
-    def __init__(self, index=0):
-        """Returns a particular index of the input."""
-        super().__init__()
-        self.index = index
-
-    def forward(self, x):
-        """
-        Forward pass.
-
-        Expects a list of tensors as input.
-        """
-        return x[self.index]

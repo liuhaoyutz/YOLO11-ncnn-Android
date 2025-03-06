@@ -13,16 +13,28 @@ Pose estimation is a task that involves identifying the location of specific poi
 
 The output of a pose estimation model is a set of points that represent the keypoints on an object in the image, usually along with the confidence scores for each point. Pose estimation is a good choice when you need to identify specific parts of an object in a scene, and their location in relation to each other.
 
-<p align="center">
-  <br>
-  <iframe loading="lazy" width="720" height="405" src="https://www.youtube.com/embed/AAkfToU3nAc"
-    title="YouTube video player" frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen>
-  </iframe>
-  <br>
-  <strong>Watch:</strong> Ultralytics YOLO11 Pose Estimation Tutorial | Real-Time Object Tracking and Human Pose Detection
-</p>
+<table>
+  <tr>
+    <td align="center">
+      <iframe loading="lazy" width="720" height="405" src="https://www.youtube.com/embed/Y28xXQmju64?si=pCY4ZwejZFu6Z4kZ"
+        title="YouTube video player" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+      <br>
+      <strong>Watch:</strong> Pose Estimation with Ultralytics YOLO.
+    </td>
+    <td align="center">
+      <iframe loading="lazy" width="720" height="405" src="https://www.youtube.com/embed/aeAX6vWpfR0"
+        title="YouTube video player" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+      <br>
+      <strong>Watch:</strong> Pose Estimation with Ultralytics HUB.
+    </td>
+  </tr>
+</table>
 
 !!! tip
 
@@ -30,23 +42,23 @@ The output of a pose estimation model is a set of points that represent the keyp
 
     In the default YOLO11 pose model, there are 17 keypoints, each representing a different part of the human body. Here is the mapping of each index to its respective body joint:
 
-    0. Nose
-    1. Left Eye
-    2. Right Eye
-    3. Left Ear
-    4. Right Ear
-    5. Left Shoulder
-    6. Right Shoulder
-    7. Left Elbow
-    8. Right Elbow
-    9. Left Wrist
-    10. Right Wrist
-    11. Left Hip
-    12. Right Hip
-    13. Left Knee
-    14. Right Knee
-    15. Left Ankle
-    16. Right Ankle
+    0: Nose
+    1: Left Eye
+    2: Right Eye
+    3: Left Ear
+    4: Right Ear
+    5: Left Shoulder
+    6: Right Shoulder
+    7: Left Elbow
+    8: Right Elbow
+    9: Left Wrist
+    10: Right Wrist
+    11: Left Hip
+    12: Right Hip
+    13: Left Knee
+    14: Right Knee
+    15: Left Ankle
+    16: Right Ankle
 
 ## [Models](https://github.com/ultralytics/ultralytics/tree/main/ultralytics/cfg/models/11)
 
@@ -61,7 +73,7 @@ YOLO11 pretrained Pose models are shown here. Detect, Segment and Pose models ar
 
 ## Train
 
-Train a YOLO11-pose model on the COCO8-pose dataset.
+Train a YOLO11-pose model on the COCO128-pose dataset.
 
 !!! example
 
@@ -98,7 +110,7 @@ YOLO pose dataset format can be found in detail in the [Dataset Guide](../datase
 
 ## Val
 
-Validate trained YOLO11n-pose model [accuracy](https://www.ultralytics.com/glossary/accuracy) on the COCO8-pose dataset. No arguments are needed as the `model` retains its training `data` and arguments as model attributes.
+Validate trained YOLO11n-pose model [accuracy](https://www.ultralytics.com/glossary/accuracy) on the COCO128-pose dataset. No arguments are needed as the `model` retains its training `data` and arguments as model attributes.
 
 !!! example
 
@@ -143,12 +155,6 @@ Use a trained YOLO11n-pose model to run predictions on images.
 
         # Predict with the model
         results = model("https://ultralytics.com/images/bus.jpg")  # predict on an image
-
-        # Access the results
-        for result in results:
-            xy = result.keypoints.xy  # x and y coordinates
-            xyn = result.keypoints.xyn  # normalized
-            kpts = result.keypoints.data  # x, y, visibility (if available)
         ```
 
     === "CLI"

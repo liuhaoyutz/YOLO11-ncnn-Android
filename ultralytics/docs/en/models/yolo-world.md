@@ -60,20 +60,16 @@ This section details the models available with their specific pre-trained weight
 
 ## Zero-shot Transfer on COCO Dataset
 
-!!! tip "Performance"
-
-    === "Detection (COCO)"
-
-        | Model Type      | mAP  | mAP50 | mAP75 |
-        | --------------- | ---- | ----- | ----- |
-        | yolov8s-world   | 37.4 | 52.0  | 40.6  |
-        | yolov8s-worldv2 | 37.7 | 52.2  | 41.0  |
-        | yolov8m-world   | 42.0 | 57.0  | 45.6  |
-        | yolov8m-worldv2 | 43.0 | 58.4  | 46.8  |
-        | yolov8l-world   | 45.7 | 61.3  | 49.8  |
-        | yolov8l-worldv2 | 45.8 | 61.3  | 49.8  |
-        | yolov8x-world   | 47.0 | 63.0  | 51.2  |
-        | yolov8x-worldv2 | 47.1 | 62.8  | 51.4  |
+| Model Type      | mAP  | mAP50 | mAP75 |
+| --------------- | ---- | ----- | ----- |
+| yolov8s-world   | 37.4 | 52.0  | 40.6  |
+| yolov8s-worldv2 | 37.7 | 52.2  | 41.0  |
+| yolov8m-world   | 42.0 | 57.0  | 45.6  |
+| yolov8m-worldv2 | 43.0 | 58.4  | 46.8  |
+| yolov8l-world   | 45.7 | 61.3  | 49.8  |
+| yolov8l-worldv2 | 45.8 | 61.3  | 49.8  |
+| yolov8x-world   | 47.0 | 63.0  | 51.2  |
+| yolov8x-worldv2 | 47.1 | 62.8  | 51.4  |
 
 ## Usage Examples
 
@@ -170,7 +166,7 @@ Model validation on a dataset is streamlined as follows:
 
 ### Track Usage
 
-[Object tracking](https://www.ultralytics.com/glossary/object-tracking) with YOLO-World model on a video/images is streamlined as follows:
+Object tracking with YOLO-World model on a video/images is streamlined as follows:
 
 !!! example
 
@@ -276,11 +272,11 @@ This approach provides a powerful means of customizing state-of-the-art object d
 
 - Train data
 
-| Dataset                                                           | Type                                                        | Samples | Boxes | Annotation Files                                                                                                                           |
-| ----------------------------------------------------------------- | ----------------------------------------------------------- | ------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Objects365v1](https://opendatalab.com/OpenDataLab/Objects365_v1) | Detection                                                   | 609k    | 9621k | [objects365_train.json](https://opendatalab.com/OpenDataLab/Objects365_v1)                                                                 |
-| [GQA](https://downloads.cs.stanford.edu/nlp/data/gqa/images.zip)  | [Grounding](https://www.ultralytics.com/glossary/grounding) | 621k    | 3681k | [final_mixed_train_no_coco.json](https://huggingface.co/GLIPModel/GLIP/blob/main/mdetr_annotations/final_mixed_train_no_coco.json)         |
-| [Flickr30k](https://shannon.cs.illinois.edu/DenotationGraph/)     | Grounding                                                   | 149k    | 641k  | [final_flickr_separateGT_train.json](https://huggingface.co/GLIPModel/GLIP/blob/main/mdetr_annotations/final_flickr_separateGT_train.json) |
+| Dataset                                                           | Type      | Samples | Boxes | Annotation Files                                                                                                                           |
+| ----------------------------------------------------------------- | --------- | ------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Objects365v1](https://opendatalab.com/OpenDataLab/Objects365_v1) | Detection | 609k    | 9621k | [objects365_train.json](https://opendatalab.com/OpenDataLab/Objects365_v1)                                                                 |
+| [GQA](https://downloads.cs.stanford.edu/nlp/data/gqa/images.zip)  | Grounding | 621k    | 3681k | [final_mixed_train_no_coco.json](https://huggingface.co/GLIPModel/GLIP/blob/main/mdetr_annotations/final_mixed_train_no_coco.json)         |
+| [Flickr30k](https://shannon.cs.illinois.edu/DenotationGraph/)     | Grounding | 149k    | 641k  | [final_flickr_separateGT_train.json](https://huggingface.co/GLIPModel/GLIP/blob/main/mdetr_annotations/final_flickr_separateGT_train.json) |
 
 - Val data
 
@@ -324,7 +320,7 @@ This approach provides a powerful means of customizing state-of-the-art object d
 
 ## Citations and Acknowledgements
 
-We extend our gratitude to the [Tencent AILab Computer Vision Center](https://www.tencent.com/) for their pioneering work in real-time open-vocabulary object detection with YOLO-World:
+We extend our gratitude to the [Tencent AILab Computer Vision Center](https://ai.tencent.com/) for their pioneering work in real-time open-vocabulary object detection with YOLO-World:
 
 !!! quote ""
 
@@ -339,7 +335,7 @@ We extend our gratitude to the [Tencent AILab Computer Vision Center](https://ww
         }
         ```
 
-For further reading, the original YOLO-World paper is available on [arXiv](https://arxiv.org/pdf/2401.17270v2). The project's source code and additional resources can be accessed via their [GitHub repository](https://github.com/AILab-CVC/YOLO-World). We appreciate their commitment to advancing the field and sharing their valuable insights with the community.
+For further reading, the original YOLO-World paper is available on [arXiv](https://arxiv.org/pdf/2401.17270v2.pdf). The project's source code and additional resources can be accessed via their [GitHub repository](https://github.com/AILab-CVC/YOLO-World). We appreciate their commitment to advancing the field and sharing their valuable insights with the community.
 
 ## FAQ
 

@@ -43,9 +43,12 @@ Measuring the gap between two objects is known as distance calculation within a 
         ```python
         import cv2
 
-        from ultralytics import solutions
+        from ultralytics import YOLO, solutions
 
-        cap = cv2.VideoCapture("Path/to/video/file.mp4")
+        model = YOLO("yolo11n.pt")
+        names = model.model.names
+
+        cap = cv2.VideoCapture("path/to/video/file.mp4")
         assert cap.isOpened(), "Error reading video file"
         w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
 
@@ -53,15 +56,16 @@ Measuring the gap between two objects is known as distance calculation within a 
         video_writer = cv2.VideoWriter("distance_calculation.avi", cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
 
         # Init distance-calculation obj
-        distance = solutions.DistanceCalculation(model="yolo11n.pt", show=True)
+        dist_obj = solutions.DistanceCalculation(names=names, view_img=True)
 
-        # Process video
         while cap.isOpened():
             success, im0 = cap.read()
             if not success:
                 print("Video frame is empty or video processing has been successfully completed.")
                 break
-            im0 = distance.calculate(im0)
+
+            tracks = model.track(im0, persist=True, show=False)
+            im0 = dist_obj.start_process(im0, tracks)
             video_writer.write(im0)
 
         cap.release()
@@ -80,11 +84,13 @@ Measuring the gap between two objects is known as distance calculation within a 
 
 ### Arguments `DistanceCalculation()`
 
-| `Name`       | `Type` | `Default` | Description                                          |
-| ------------ | ------ | --------- | ---------------------------------------------------- |
-| `model`      | `str`  | `None`    | Path to Ultralytics YOLO Model File                  |
-| `line_width` | `int`  | `2`       | Line thickness for bounding boxes.                   |
-| `show`       | `bool` | `False`   | Flag to control whether to display the video stream. |
+| `Name`           | `Type`  | `Default`       | Description                                               |
+| ---------------- | ------- | --------------- | --------------------------------------------------------- |
+| `names`          | `dict`  | `None`          | Dictionary of classes names.                              |
+| `view_img`       | `bool`  | `False`         | Flag to indicate if the video stream should be displayed. |
+| `line_thickness` | `int`   | `2`             | Thickness of the lines drawn on the image.                |
+| `line_color`     | `tuple` | `(255, 255, 0)` | Color of the lines drawn on the image (BGR format).       |
+| `centroid_color` | `tuple` | `(255, 0, 255)` | Color of the centroids drawn (BGR format).                |
 
 ### Arguments `model.track`
 
@@ -116,8 +122,10 @@ To delete points drawn during distance calculation with Ultralytics YOLO11, you 
 
 The key arguments for initializing the `DistanceCalculation` class in Ultralytics YOLO11 include:
 
-- `model`: Model file path.
-- `show`: Flag to indicate if the video stream should be displayed.
-- `line_width`: Thickness of bounding box and the lines drawn on the image.
+- `names`: Dictionary mapping class indices to class names.
+- `view_img`: Flag to indicate if the video stream should be displayed.
+- `line_thickness`: Thickness of the lines drawn on the image.
+- `line_color`: Color of the lines drawn on the image (BGR format).
+- `centroid_color`: Color of the centroids (BGR format).
 
 For an exhaustive list and default values, see the [arguments of DistanceCalculation](#arguments-distancecalculation).

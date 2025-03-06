@@ -82,10 +82,14 @@ There are two types of instance segmentation tracking available in the Ultralyti
     === "Instance Segmentation with Object Tracking"
 
         ```python
+        from collections import defaultdict
+
         import cv2
 
         from ultralytics import YOLO
         from ultralytics.utils.plotting import Annotator, colors
+
+        track_history = defaultdict(lambda: [])
 
         model = YOLO("yolo11n-seg.pt")  # segmentation model
         cap = cv2.VideoCapture("path/to/video/file.mp4")
@@ -201,10 +205,14 @@ To implement object tracking, use the `model.track` method and ensure that each 
     === "Python"
 
         ```python
+        from collections import defaultdict
+
         import cv2
 
         from ultralytics import YOLO
         from ultralytics.utils.plotting import Annotator, colors
+
+        track_history = defaultdict(lambda: [])
 
         model = YOLO("yolo11n-seg.pt")  # segmentation model
         cap = cv2.VideoCapture("path/to/video/file.mp4")
